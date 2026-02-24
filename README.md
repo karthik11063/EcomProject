@@ -1,1 +1,2 @@
 # EcomProject
+This project is an e-commerce application built using Java Spring Boot. It provides a platform for users to browse and purchase products online. The application includes features such as user authentication, product management, shopping cart functionality, and order processing.
