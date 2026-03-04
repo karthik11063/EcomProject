@@ -9,9 +9,11 @@ import java.util.List;
 public interface ProductService {
     ResponseEntity<ProductDTO> addProduct(ProductDTO productDTO);
 
-    ResponseEntity<Page<ProductDTO>> getAllProducts(int page, int size);
+    ResponseEntity<Page<ProductDTO>> getAllProducts(int page, int size,String sortBy, String sortDir);
 
     ResponseEntity<ProductDTO> updateProduct(Long id, ProductDTO productDTO);
 
     ResponseEntity<String> deleteProduct(Long id);
+
+    ResponseEntity<Page<ProductDTO>> getFilteredProducts(List<String> category, Long minPrice, Long maxPrice,int page,int size,String sortBy);
 }

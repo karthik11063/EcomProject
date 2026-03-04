@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api")
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -32,8 +32,10 @@ public class ProductController {
      */
     @GetMapping("/products")
     public ResponseEntity<Page<ProductDTO>>getAllProducts(@RequestParam(name="page",defaultValue = "0") int page,
-                                                          @RequestParam(name="size",defaultValue = "10") int size){
-        ResponseEntity<Page<ProductDTO>>response = productService.getAllProducts(page,size);
+                                                          @RequestParam(name="size",defaultValue = "10") int size,
+                                                          @RequestParam(name="sortBy",defaultValue = "productName") String sortBy,
+                                                          @RequestParam(name="sortDir",defaultValue = "asc") String sortDir){
+        ResponseEntity<Page<ProductDTO>>response = productService.getAllProducts(page,size,sortBy,sortDir);
         return response;
     }
     /**     * Endpoint to update the details of an existing product in the inventory.
@@ -55,6 +57,16 @@ public class ProductController {
     @DeleteMapping("/products/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         ResponseEntity<String> response = productService.deleteProduct(id);
+        return response;
+    }
+    @GetMapping("/products/filter")
+    public ResponseEntity<Page<ProductDTO>>getFilteredProducts(@RequestParam(name="category",required=false) List<String> category,
+                                                               @RequestParam(name="minPrice",required = false) Long minPrice,
+                                                               @RequestParam(name="maxPrice",required = false) Long maxPrice,
+                                                               @RequestParam(name="page",defaultValue = "0") int page,
+                                                               @RequestParam(name="size",defaultValue = "10") int size,
+                                                               @RequestParam(name="sortBy",defaultValue = "productName") String sortBy){
+        ResponseEntity<Page<ProductDTO>>response = productService.getFilteredProducts(category,minPrice,maxPrice,page,size,sortBy);
         return response;
     }
 }
