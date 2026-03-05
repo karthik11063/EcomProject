@@ -11,6 +11,8 @@ import com.Karthik.EcomDemo.repo.ProductRepo;
 import com.Karthik.EcomDemo.repo.UserRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -30,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @CacheEvict(value="orders:user",key="#order.user.userId")
     public ResponseEntity<?> placeOrder(OrderRequestDTO order) {
 
         User findUser = userRepo.findById(order.getUser().getUserId())
@@ -79,6 +82,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Cacheable(value="orders:user",key="#userId")
     public OrderResponseDTO getAllUserOrders(Long userId) {
         User findUser = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

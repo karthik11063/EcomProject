@@ -6,6 +6,8 @@ import com.Karthik.EcomDemo.model.Product;
 import com.Karthik.EcomDemo.repo.ProductRepo;
 import com.Karthik.EcomDemo.repo.ProductSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepo productRepo;
     @Override
+    @CacheEvict(value="products",allEntries = true)
     public ResponseEntity<ProductDTO> addProduct(ProductDTO productDTO) {
         Product product = productMapper.toProduct(productDTO);
         productRepo.save(product);
@@ -31,17 +34,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<Page<ProductDTO>> getAllProducts(int page, int size,String sortBy, String sortDir) {
+    @Cacheable(value = "products", key = "{#page,#size,#sortBy,#sortDir}")
+    public List<ProductDTO> getAllProducts(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
-        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        Pageable pageable = PageRequest.of(page, size,sort);
         Page<Product> products = productRepo.findAll(pageable);
-        Page<ProductDTO> dtoPage = products.map(productMapper::toProductDTO);
-        return ResponseEntity.ok(dtoPage);
+
+        return products.getContent()
+                .stream()
+                .map(productMapper::toProductDTO)
+                .toList();
     }
 
     @Override
+    @CacheEvict(value="products",allEntries = true)
     public ResponseEntity<ProductDTO> updateProduct(Long id, ProductDTO productDTO) {
         Product product = productMapper.toProduct(productDTO);
         Optional<Product> existingProduct = productRepo.findById(id);
@@ -58,6 +68,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value="products",allEntries = true)
     public ResponseEntity<String> deleteProduct(Long id) {
         Optional<Product> existingProduct = productRepo.findById(id);
         if (!existingProduct.isPresent()) {

@@ -2,8 +2,13 @@ package com.Karthik.EcomDemo.controller;
 
 import com.Karthik.EcomDemo.dto.ProductDTO;
 import com.Karthik.EcomDemo.service.ProductService;
+import jakarta.persistence.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +40,13 @@ public class ProductController {
                                                           @RequestParam(name="size",defaultValue = "10") int size,
                                                           @RequestParam(name="sortBy",defaultValue = "productName") String sortBy,
                                                           @RequestParam(name="sortDir",defaultValue = "asc") String sortDir){
-        ResponseEntity<Page<ProductDTO>>response = productService.getAllProducts(page,size,sortBy,sortDir);
-        return response;
+        List<ProductDTO> products = productService.getAllProducts(page, size, sortBy, sortDir);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<ProductDTO> pageResult = new PageImpl<>(products, pageable, products.size());
+
+        return ResponseEntity.ok(pageResult);
     }
     /**     * Endpoint to update the details of an existing product in the inventory.
      *
